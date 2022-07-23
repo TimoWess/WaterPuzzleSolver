@@ -171,49 +171,90 @@ play board = do
             putStrLn "Good game!"
             return ()
         "auto" -> do
-            (newBoard, moves, moveList) <- autoPlay board
-            putStrLn $ show moves ++ " moves needed!"
-            let options = do
-                    putStr "Show move list, continue or new game? [s/c/n] "
-                    hFlush stdout
-                    input <- getLine
-                    case map toLower input of
-                        "s" -> do
+            let sub times = do
+                    (newBoard, moves, moveList, success) <- autoPlay board
+                    if not success
+                        then do
                             putStrLn $
-                                replicate (max (length $ show moveList) 20) '='
-                            putStrLn "Before:"
-                            printBoard board
-                            putStrLn $
-                                replicate (max (length $ show moveList) 20) '='
-                            print moveList
-                            putStrLn $
-                                replicate (max (length $ show moveList) 20) '='
-                            putStrLn "After:"
-                            printBoard newBoard
-                            putStrLn $
-                                replicate (max (length $ show moveList) 20) '='
-                            play newBoard
-                        "c" -> play newBoard
-                        "n" -> play board
-                        _ -> do
-                            putStrLn "Invalid input!"
+                                "Try " ++ show times ++ " failed. Trying again!"
+                            sub (times + 1)
+                        else do
+                            putStrLn $ show moves ++ " moves needed!"
+                            let options = do
+                                    putStr
+                                        "Show move list, continue or new game? [s/c/n] "
+                                    hFlush stdout
+                                    input <- getLine
+                                    case map toLower input of
+                                        "s" -> do
+                                            putStrLn $
+                                                replicate
+                                                    (max (length $ show moveList)
+                                                         20)
+                                                    '='
+                                            putStrLn "Before:"
+                                            printBoard board
+                                            putStrLn $
+                                                replicate
+                                                    (max (length $ show moveList)
+                                                         20)
+                                                    '='
+                                            print moveList
+                                            putStrLn $
+                                                replicate
+                                                    (max (length $ show moveList)
+                                                         20)
+                                                    '='
+                                            putStrLn "After:"
+                                            printBoard newBoard
+                                            putStrLn $
+                                                replicate
+                                                    (max (length $ show moveList)
+                                                         20)
+                                                    '='
+                                            play newBoard
+                                        "c" -> play newBoard
+                                        "n" -> play board
+                                        _ -> do
+                                            putStrLn "Invalid input!"
+                                            options
                             options
-            options
+            sub 1
         _ -> do
             putStrLn "Invalid input. Try again!"
             play board
 
-autoPlay :: Board -> IO (Board, Integer, [(Int, Int)])
+autoPlay :: Board -> IO (Board, Integer, [Move], Bool)
 autoPlay board = fn' board 0 0 []
   where
-    fn' :: Board -> Integer -> Integer -> [Move] -> IO (Board, Integer, [Move])
+    fn' :: Board
+        -> Integer
+        -> Integer
+        -> [Move]
+        -> IO (Board, Integer, [Move], Bool)
     fn' board moves fails moveList = do
-        if fails >= maxFails
-            then return (board, moves, moveList)
-            else do
-                r1 <- randomRIO (0, length board - 1)
-                r2 <- randomRIO (0, length board - 1)
-                let (success, newBoard) = pour board r1 r2
-                if success
-                    then fn' newBoard (moves + 1) 0 ((r1, r2) : moveList)
-                    else fn' board moves (fails + 1) moveList
+        if isDone board
+            then return (board, moves, moveList, True)
+            else if fails >= maxFails
+                     then return (board, moves, moveList, False)
+                     else do
+                         r1 <- randomRIO (0, length board - 1)
+                         r2 <- randomRIO (0, length board - 1)
+                         let (success, newBoard) = pour board r1 r2
+                         if success
+                             then fn' newBoard
+                                      (moves + 1)
+                                      0
+                                      ((r1, r2) : moveList)
+                             else fn' board moves (fails + 1) moveList
+
+isDone :: Board -> Bool
+isDone = all finished
+
+finished :: Tube -> Bool
+finished tube@(colors, index)
+    | null colors = True
+    | length colors < 4 = False
+    | otherwise =
+        let needed = head colors
+         in all (== needed) colors
