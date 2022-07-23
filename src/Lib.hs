@@ -136,7 +136,7 @@ printBoard :: Board -> IO ()
 printBoard board =
     forM_ board $ \i -> do
         let (colors, index) = i
-            maxLength = maximum [length $ show x | (y, x) <- board]
+            maxLength = length (show $ snd $ last board)
         putStrLn $ leftPad (show index) maxLength '0' ++ ": " ++ show colors
 
 play :: Board -> IO ()
@@ -179,9 +179,19 @@ play board = do
                     input <- getLine
                     case map toLower input of
                         "s" -> do
+                            putStrLn $
+                                replicate (max (length $ show moveList) 20) '='
+                            putStrLn "Before:"
                             printBoard board
+                            putStrLn $
+                                replicate (max (length $ show moveList) 20) '='
                             print moveList
+                            putStrLn $
+                                replicate (max (length $ show moveList) 20) '='
+                            putStrLn "After:"
                             printBoard newBoard
+                            putStrLn $
+                                replicate (max (length $ show moveList) 20) '='
                             play newBoard
                         "c" -> play newBoard
                         "n" -> play board

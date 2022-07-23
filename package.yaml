@@ -2,9 +2,9 @@ name:                ColorMatcher
 version:             0.1.0.0
 github:              "githubuser/ColorMatcher"
 license:             BSD3
-author:              "Author name here"
-maintainer:          "example@example.com"
-copyright:           "2022 Author name here"
+author:              "Timo Wesselmann"
+maintainer:          "timo.wesselmann@gmail.com"
+copyright:           "2022 Timo Wesselmann"
 
 extra-source-files:
 - README.md
@@ -27,7 +27,7 @@ library:
   source-dirs: src
 
 executables:
-  ColorMatcher-exe:
+  ColorMatcher:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
