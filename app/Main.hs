@@ -3,4 +3,6 @@ module Main where
 import Lib
 
 main :: IO ()
-main = return ()
+main = do
+    board <- getBoard
+    play board
