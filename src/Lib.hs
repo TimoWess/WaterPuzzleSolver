@@ -212,7 +212,7 @@ play board = do
                                                                   show moveList)
                                                                  20)
                                                             '='
-                                                    print moveList
+                                                    print $ reverse moveList
                                                     putStrLn $
                                                         replicate
                                                             (max (length $
