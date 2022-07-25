@@ -172,53 +172,63 @@ play board = do
             return ()
         "auto" -> do
             let sub times = do
-                    (newBoard, moves, moveList, success) <- autoPlay board
-                    if not success
-                        then do
-                            putStrLn $
-                                "Try " ++ show times ++ " failed. Trying again!"
-                            sub (times + 1)
+                    if times > 50000
+                        then putStrLn
+                                 "No solution found with 50k trys. Giving up!"
                         else do
-                            putStrLn $ show moves ++ " moves needed!"
-                            let options = do
-                                    putStr
-                                        "Show move list, continue or new game? [s/c/n] "
-                                    hFlush stdout
-                                    input <- getLine
-                                    case map toLower input of
-                                        "s" -> do
-                                            putStrLn $
-                                                replicate
-                                                    (max (length $ show moveList)
-                                                         20)
-                                                    '='
-                                            putStrLn "Before:"
-                                            printBoard board
-                                            putStrLn $
-                                                replicate
-                                                    (max (length $ show moveList)
-                                                         20)
-                                                    '='
-                                            print moveList
-                                            putStrLn $
-                                                replicate
-                                                    (max (length $ show moveList)
-                                                         20)
-                                                    '='
-                                            putStrLn "After:"
-                                            printBoard newBoard
-                                            putStrLn $
-                                                replicate
-                                                    (max (length $ show moveList)
-                                                         20)
-                                                    '='
-                                            play newBoard
-                                        "c" -> play newBoard
-                                        "n" -> play board
-                                        _ -> do
-                                            putStrLn "Invalid input!"
-                                            options
-                            options
+                            (newBoard, moves, moveList, success) <-
+                                autoPlay board
+                            if not success
+                                then do
+                                    putStrLn $
+                                        "Try " ++
+                                        show times ++ " failed. Trying again!"
+                                    sub (times + 1)
+                                else do
+                                    putStrLn $ show moves ++ " moves needed!"
+                                    let options = do
+                                            putStr
+                                                "Show move list, continue or new game? [s/c/n] "
+                                            hFlush stdout
+                                            input <- getLine
+                                            case map toLower input of
+                                                "s" -> do
+                                                    putStrLn $
+                                                        replicate
+                                                            (max (length $
+                                                                  show moveList)
+                                                                 20)
+                                                            '='
+                                                    putStrLn "Before:"
+                                                    printBoard board
+                                                    putStrLn $
+                                                        replicate
+                                                            (max (length $
+                                                                  show moveList)
+                                                                 20)
+                                                            '='
+                                                    print moveList
+                                                    putStrLn $
+                                                        replicate
+                                                            (max (length $
+                                                                  show moveList)
+                                                                 20)
+                                                            '='
+                                                    putStrLn "After:"
+                                                    printBoard newBoard
+                                                    putStrLn $
+                                                        replicate
+                                                            (max (length $
+                                                                  show moveList)
+                                                                 20)
+                                                            '='
+                                                    play newBoard
+                                                "c" -> play newBoard
+                                                "n" -> play board
+                                                _ -> do
+                                                    putStrLn "Invalid input!"
+                                                    options
+                                    options
             sub 1
         _ -> do
             putStrLn "Invalid input. Try again!"
