@@ -20,7 +20,12 @@ data Color
     | LightGreen
     | Green
     | DarkGreen
-    deriving (Read, Show, Enum, Eq, Ord)
+    deriving (Read, Enum, Eq, Ord)
+
+instance Show Color where
+    show x =
+        let code = colorCode x
+         in code ++ colorToString x ++ "\x1b[0m"
 
 type Board = [Tube]
 
@@ -268,3 +273,39 @@ finished tube@(colors, index)
     | otherwise =
         let needed = head colors
          in all (== needed) colors
+
+colorPrint :: String -> Color -> String
+colorPrint str color =
+    let code = colorCode color
+     in code ++ str ++ "\x1b[0m"
+
+colorCode color =
+    case color of
+        Red -> "\x1b[31m"
+        Green -> "\x1b[32m"
+        LightGreen -> "\x1b[92m"
+        DarkGreen -> "\x1b[32m"
+        Yellow -> "\x1b[93m"
+        DarkBlue -> "\x1b[34m"
+        LightBlue -> "\x1b[36m"
+        Pink -> "\x1b[95m"
+        Grey -> "\x1b[90m"
+        Orange -> "\x1b[33m"
+        Purple -> "\x1b[35m"
+        _ -> "\x1b[0m"
+
+colorToString :: Color -> String
+colorToString color =
+    case color of
+        Red -> "Red"
+        Grey -> "Grey"
+        LightBlue -> "LightBlue"
+        DarkBlue -> "DarkBlue"
+        Yellow -> "Yellow"
+        Brown -> "Brown"
+        Orange -> "Orange"
+        Pink -> "Pink"
+        Purple -> "Purple"
+        LightGreen -> "LightGreen"
+        Green -> "Green"
+        DarkGreen -> "DarkGreen"
