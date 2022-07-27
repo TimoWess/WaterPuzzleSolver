@@ -93,7 +93,7 @@ getBoard = fn' []
             then return (reverse board)
             else do
                 newTube <- getTube
-                let newBoard = (newTube, length board) : board
+                let newBoard = (newTube, length board + 1) : board
                 print newBoard
                 fn' newBoard
 
@@ -163,12 +163,12 @@ play board = do
             hFlush stdout
             input <- getLine
             let i2 = read input :: Int
-                (success, newBoard) = pour board i1 i2
+                (success, newBoard) = pour board (i1 - 1) (i2 - 1)
             print newBoard
             play newBoard
         "a" -> do
             newTube <- getTube
-            let newBoard = reverse ((newTube, length board) : reverse board)
+            let newBoard = reverse ((newTube, length board + 1) : reverse board)
             play newBoard
         "c" -> do
             play []
@@ -260,7 +260,7 @@ autoPlay board = fn' board 0 0 []
                              then fn' newBoard
                                       (moves + 1)
                                       0
-                                      ((r1, r2) : moveList)
+                                      ((r1 + 1, r2 + 1) : moveList)
                              else fn' board moves (fails + 1) moveList
 
 isDone :: Board -> Bool
