@@ -262,6 +262,7 @@ play board = do
                                                     putStrLn "After:"
                                                     printBoard newBoard
                                                     printSep
+                                                    play newBoard
                                                 "c" -> play newBoard
                                                 "n" -> play board
                                                 _ -> do
