@@ -33,6 +33,7 @@ type Tube = ([Color], Int)
 
 type Move = (Int, Int)
 
+maxFails :: Integer
 maxFails = 10000
 
 isFull :: Tube -> Bool
@@ -192,42 +193,28 @@ play board = do
                                 else do
                                     putStrLn $ show moves ++ " moves needed!"
                                     let options = do
+                                            let printSep =
+                                                    putStrLn $
+                                                    replicate
+                                                        (max (length $
+                                                              show moveList)
+                                                             20)
+                                                        '='
                                             putStr
                                                 "Show move list, continue or new game? [s/c/n] "
                                             hFlush stdout
                                             input <- getLine
                                             case map toLower input of
                                                 "s" -> do
-                                                    putStrLn $
-                                                        replicate
-                                                            (max (length $
-                                                                  show moveList)
-                                                                 20)
-                                                            '='
+                                                    printSep
                                                     putStrLn "Before:"
                                                     printBoard board
-                                                    putStrLn $
-                                                        replicate
-                                                            (max (length $
-                                                                  show moveList)
-                                                                 20)
-                                                            '='
+                                                    printSep
                                                     print $ reverse moveList
-                                                    putStrLn $
-                                                        replicate
-                                                            (max (length $
-                                                                  show moveList)
-                                                                 20)
-                                                            '='
+                                                    printSep
                                                     putStrLn "After:"
                                                     printBoard newBoard
-                                                    putStrLn $
-                                                        replicate
-                                                            (max (length $
-                                                                  show moveList)
-                                                                 20)
-                                                            '='
-                                                    play newBoard
+                                                    printSep
                                                 "c" -> play newBoard
                                                 "n" -> play board
                                                 _ -> do
