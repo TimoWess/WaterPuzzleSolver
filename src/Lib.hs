@@ -244,7 +244,8 @@ play board = do
             hFlush stdout
             index <- fmap read getLine
             let newBoard = deleteTube board index
-            play newBoard
+            let reindexedBoard = zip [color | (color, _) <- newBoard] [1 ..]
+            play reindexedBoard
         "auto" -> do
             let (canPlay, missingColors) = isPlayable board
             if not canPlay
