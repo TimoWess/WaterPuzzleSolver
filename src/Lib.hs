@@ -2,6 +2,7 @@ module Lib where
 
 import Control.Monad
 import Data.Char
+import Data.List
 import System.IO
 import System.Random
 
@@ -122,6 +123,20 @@ replaceTubes t1 t2 nt1 nt2 currentTube
     | currentTube == t2 = nt2
     | otherwise = currentTube
 
+-- Replace a single tube
+replaceTube :: Tube -> Tube -> Tube -> Tube
+replaceTube t nt currentTube
+    | currentTube == t = nt
+    | otherwise = currentTube
+
+-- Delete a tube by index (1 indexed)
+deleteTube :: Board -> Int -> Board
+deleteTube (x@(_, i):xs) index =
+    if i == index
+        then deleteTube xs index
+        else x : deleteTube xs index
+deleteTube [] _ = []
+
 -- Askes user to create a game board
 getBoard :: IO Board
 getBoard = fn' []
@@ -181,6 +196,7 @@ getColor x =
 leftPad :: String -> Int -> Char -> String
 leftPad str num chr = replicate (num - length str) chr ++ str
 
+-- Print current board
 printBoard :: Board -> IO ()
 printBoard board =
     forM_ board $ \i -> do
@@ -192,7 +208,7 @@ printBoard board =
 play :: Board -> IO ()
 play board = do
     putStr
-        "Move, add a tube, print board, enable autoplay, clear board or quit? [m/a/p/auto/c/q] "
+        "Move, add a tube, edit a tube, delete a tube, print board, enable autoplay, clear board or quit? [m/a/e/d/p/auto/c/q] "
     hFlush stdout
     input <- getLine
     case map toLower input of
@@ -220,56 +236,75 @@ play board = do
         "q" -> do
             putStrLn "Good game!"
             return ()
+        "e" -> do
+            (success, newBoard) <- editTube board
+            play newBoard
+        "d" -> do
+            putStr "Which tube should be deleted: "
+            hFlush stdout
+            index <- fmap read getLine
+            let newBoard = deleteTube board index
+            play newBoard
         "auto" -> do
-            let sub times = do
-                    if times > 50000
-                        then putStrLn
-                                 "No solution found with 50k trys. Giving up!"
-                        else do
-                            (newBoard, moves, moveList, success) <-
-                                autoPlay board
-                            if not success
-                                then do
-                                    putStr $
-                                        if times `mod` 1000 == 0
-                                            then "Try " ++
-                                                 show times ++
-                                                 " failed. Trying again!\n"
-                                            else ""
-                                    sub (times + 1)
+            let (canPlay, missingColors) = isPlayable board
+            if not canPlay
+                then do
+                    printMissingColors missingColors
+                    play board
+                else do
+                    let sub times = do
+                            if times > 50000
+                                then putStrLn
+                                         "No solution found with 50k trys. Giving up!"
                                 else do
-                                    putStrLn $ show moves ++ " moves needed!"
-                                    let options = do
-                                            let printSep =
-                                                    putStrLn $
-                                                    replicate
-                                                        (max (length $
-                                                              show moveList)
-                                                             20)
-                                                        '='
-                                            putStr
-                                                "Show move list, continue or new game? [s/c/n] "
-                                            hFlush stdout
-                                            input <- getLine
-                                            case map toLower input of
-                                                "s" -> do
-                                                    printSep
-                                                    putStrLn "Before:"
-                                                    printBoard board
-                                                    printSep
-                                                    print $ reverse moveList
-                                                    printSep
-                                                    putStrLn "After:"
-                                                    printBoard newBoard
-                                                    printSep
-                                                    play newBoard
-                                                "c" -> play newBoard
-                                                "n" -> play board
-                                                _ -> do
-                                                    putStrLn "Invalid input!"
-                                                    options
-                                    options
-            sub 1
+                                    (newBoard, moves, moveList, success) <-
+                                        autoPlay board
+                                    if not success
+                                        then do
+                                            putStr $
+                                                if times `mod` 1000 == 0
+                                                    then "Try " ++
+                                                         show times ++
+                                                         " failed. Trying again!\n"
+                                                    else ""
+                                            sub (times + 1)
+                                        else do
+                                            putStrLn $
+                                                show moves ++ " moves needed!"
+                                            let options = do
+                                                    let printSep =
+                                                            putStrLn $
+                                                            replicate
+                                                                (max (length $
+                                                                      show
+                                                                          moveList)
+                                                                     20)
+                                                                '='
+                                                    putStr
+                                                        "Show move list, continue or new game? [s/c/n] "
+                                                    hFlush stdout
+                                                    input <- getLine
+                                                    case map toLower input of
+                                                        "s" -> do
+                                                            printSep
+                                                            putStrLn "Before:"
+                                                            printBoard board
+                                                            printSep
+                                                            print $
+                                                                reverse moveList
+                                                            printSep
+                                                            putStrLn "After:"
+                                                            printBoard newBoard
+                                                            printSep
+                                                            play newBoard
+                                                        "c" -> play newBoard
+                                                        "n" -> play board
+                                                        _ -> do
+                                                            putStrLn
+                                                                "Invalid input!"
+                                                            options
+                                            options
+                    sub 1
         _ -> do
             putStrLn "Invalid input. Try again!"
             play board
@@ -315,3 +350,55 @@ colorPrint :: String -> Color -> String
 colorPrint str color =
     let code = colorCode color
      in code ++ str ++ "\x1b[0m"
+
+-- Checks if all colors are exactly 4 times on the board
+isPlayable :: Board -> (Bool, [(Color, Int)])
+isPlayable board =
+    let allColors = (group . sort . concat) [colors | (colors, index) <- board]
+        missingColors =
+            let x = filter (\i -> length i /= 4) allColors
+             in [(head t, 4 - length t) | t <- x]
+        missing = all (\i -> length i == 4) allColors
+     in (missing, missingColors)
+
+-- Output to help player identify missing/to many colors on board
+printMissingColors :: [(Color, Int)] -> IO ()
+printMissingColors missingColors = do
+    putStrLn
+        "======================================================================="
+    putStrLn "There are either colors missing or to many of one kind!"
+    putStrLn
+        "Positive numbers indicate missing colors and negative indicate to many!"
+    let longestColor =
+            maximum [length $ show color | (color, _) <- missingColors]
+    forM_ missingColors $ \(color, amount) -> do
+        let str = show color
+        putStrLn $
+            str ++
+            ":" ++
+            replicate
+                (longestColor - length str + 1 +
+                 if amount < 0
+                     then 0
+                     else 1)
+                ' ' ++
+            show amount
+    putStrLn
+        "======================================================================="
+
+-- Let player change one tube on the board
+editTube :: Board -> IO (Bool, Board)
+editTube board = do
+    putStrLn "What tube do you want to edit: "
+    input <- fmap (read :: String -> Int) getLine
+    let tubeIndex = input - 1
+    if tubeIndex >= length board || tubeIndex < 0
+        then do
+            putStrLn "Invalid tube selected!"
+            return (False, board)
+        else do
+            let tube = board !! tubeIndex
+            putStrLn "Input the correct colors for the tube!"
+            newTube <- getTube
+            let newBoard = map (replaceTube tube (newTube, snd tube)) board
+            return (True, newBoard)
