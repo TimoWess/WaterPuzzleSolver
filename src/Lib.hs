@@ -254,8 +254,10 @@ play board = do
                 else do
                     let sub times = do
                             if times > 50000
-                                then putStrLn
-                                         "No solution found with 50k trys. Giving up!"
+                                then do
+                                    putStrLn
+                                        "No solution found with 50k trys. Giving up!"
+                                    play board
                                 else do
                                     (newBoard, moves, moveList, success) <-
                                         autoPlay board
