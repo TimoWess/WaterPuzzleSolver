@@ -1,6 +1,6 @@
-name:                ColorMatcher
+name:                WaterPuzzleSolver
 version:             0.1.0.0
-github:              "githubuser/ColorMatcher"
+github:              "TimoWess/WaterPuzzleSolver"
 license:             BSD3
 author:              "Timo Wesselmann"
 maintainer:          "timo.wesselmann@gmail.com"
@@ -17,7 +17,7 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/githubuser/ColorMatcher#readme>
+description:         Please see the README on GitHub at <https://github.com/TimoWess/WaterPuzzleSolver#readme>
 
 dependencies:
 - base >= 4.7 && < 5
@@ -28,7 +28,7 @@ library:
   source-dirs: src
 
 executables:
-  ColorMatcher:
+  WaterPuzzleSolver:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
@@ -36,13 +36,13 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - ColorMatcher
+    - WaterPuzzleSolver
     when:
     - condition: false
-      other-modules: Paths_ColorMatcher
+      other-modules: Paths_WaterPuzzleSolver
 
 tests:
-  ColorMatcher-test:
+  WaterPuzzleSolver-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
@@ -50,4 +50,4 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - ColorMatcher
+    - WaterPuzzleSolver

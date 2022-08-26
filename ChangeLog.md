@@ -1,3 +1,3 @@
-# Changelog for ColorMatcher
+# Changelog for WaterPuzzleSolver
 
 ## Unreleased changes
